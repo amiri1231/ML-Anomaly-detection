@@ -32,6 +32,27 @@ def add_ratio_features(X: pd.DataFrame) -> pd.DataFrame:
         fwd_bytes = X["Total Length of Fwd Packets"].astype(float)
         bwd_bytes = X["Total Length of Bwd Packets"].astype(float)
         X["Bytes_Fwd_Bwd_Ratio"] = (fwd_bytes + 1.0) / (bwd_bytes + 1.0)
+#-------------------------------------------------------------------------------
+    # 3) Bytes per second (
+    # CICIDS "Flow Duration" is in microseconds so i have to convert to seconds.
+    # this is the throughput
+
+    if _has_cols(X, ["Flow Duration", "Total Length of Fwd Packets", "Total Length of Bwd Packets"]):
+        dur_sec = (X["Flow Duration"].astype(float) / 1_000_000.0).clip(lower=1e-6)
+        total_bytes = X["Total Length of Fwd Packets"].astype(float) + X["Total Length of Bwd Packets"].astype(float)
+        X["Bytes_per_Second"] = total_bytes / dur_sec
+
+    # 4) Packets per second 
+    # some attacks send many tiny packets so this feature should? flag them
+    if _has_cols(X, ["Flow Duration", "Total Fwd Packets", "Total Backward Packets"]):
+        dur_sec = (X["Flow Duration"].astype(float) / 1_000_000.0).clip(lower=1e-6)
+        total_pkts = X["Total Fwd Packets"].astype(float) + X["Total Backward Packets"].astype(float)
+        X["Pkts_per_Second"] = total_pkts / dur_sec
+
+#-------------------------------------------------------------------------------#
+# cleaning up
+    X.replace([np.inf, -np.inf], np.nan, inplace=True)
+    X.fillna(0.0, inplace=True)
 
     return X
 
