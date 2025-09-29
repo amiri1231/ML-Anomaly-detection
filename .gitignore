@@ -4,6 +4,8 @@ data/
 
 results/
 
+test/
+
 __pycache__/
 *.pyc
 *.pyo
