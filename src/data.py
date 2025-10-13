@@ -15,13 +15,11 @@ def load_raw() -> pd.DataFrame:
         if not path.exists():
             raise FileNotFoundError(f"Missing file: {path.resolve()}")
         df = pd.read_csv(path, low_memory=False)
-        # normalize headers (remove leading/trailing spaces)
         df.columns = df.columns.str.strip()
         dfs.append(df)
 
     raw = pd.concat(dfs, ignore_index=True)
 
-    # Find the label column case-insensitively, then rename to LABEL_COL
     lower_map = {c.lower(): c for c in raw.columns}
     if LABEL_COL.lower() not in lower_map:
         raise ValueError(f"Label column '{LABEL_COL}' not found after stripping headers. "
@@ -52,7 +50,9 @@ def prepare_features(raw: pd.DataFrame):
          .fillna(0.0)
          .astype(float))
 
-    # binary labels: BENIGN -> 0, anything else -> 1
+    # binary labels
+    # BENIGN -> 0
+    # anything else -> 1
     y_list = []
     for v in df[LABEL_COL]:
         y_list.append(0 if isinstance(v, str) and "BENIGN" in v.upper() else 1)
