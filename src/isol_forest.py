@@ -16,7 +16,6 @@ from .data import load_raw, prepare_features
 from .features import add_ratio_features
 
 
-# ----------------------------- Utilities -----------------------------
 def split_indices(n_rows: int, val_split: float, test_split: float):
     """Contiguous index split: first train, then val, then test."""
     train_frac = 1.0 - val_split - test_split
@@ -127,16 +126,26 @@ def main():
     plt.savefig(RESULTS_DIR / "pr_curve_val.png", dpi=150)
     plt.close()
 
-    # 2) Histogram of test anomaly scores
+    # 2) Score Density Plot (Test)
     plt.figure(figsize=(6, 4))
-    plt.hist(s_te, bins=80, color="skyblue", edgecolor="black")
-    plt.axvline(float(best_thr), color="red", linestyle="--", label=f"Threshold = {float(best_thr):.4f}")
-    plt.title("Anomaly Score Distribution (Test)")
+
+    sorted_scores = np.sort(s_te)
+    density, bins = np.histogram(sorted_scores, bins=200, density=True)
+    center = (bins[:-1] + bins[1:]) / 2
+
+    plt.plot(center, density, color="steelblue", linewidth=2, label="Score Density")
+
+    plt.axvline(float(best_thr), color="red", linestyle="--", linewidth=1.5,
+                label=f"Threshold = {float(best_thr):.4f}")
+
+    plt.title("Anomaly Score Density (Test)", fontsize=12, weight="bold")
     plt.xlabel("Anomaly Score (higher = more anomalous)")
-    plt.ylabel("Count")
+    plt.ylabel("Density")
     plt.legend()
+    plt.grid(alpha=0.3)
     plt.tight_layout()
-    plt.savefig(RESULTS_DIR / "score_hist_test.png", dpi=150)
+
+    plt.savefig(RESULTS_DIR / "score_density_test.png", dpi=150)
     plt.close()
 
     # 3) Confusion Matrix
@@ -152,7 +161,7 @@ def main():
     plt.savefig(RESULTS_DIR / "confusion_matrix_test.png", dpi=150)
     plt.close()
 
-    print("✅ Done. Plots saved in 'results/'")
+    print("Done. Plots saved in 'results/'")
 
 
 if __name__ == "__main__":
