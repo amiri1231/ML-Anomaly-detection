@@ -114,7 +114,7 @@ def main():
 
     print("▶ Plotting results")
 
-    # 1) PR Curve (Validation)
+    # 1) PR Curve 
     prec, rec, thr_grid = precision_recall_curve(y_va, s_va)
     plt.figure(figsize=(6, 5))
     plt.plot(rec, prec, label=f"AUC={ap_va:.3f}")
@@ -126,6 +126,34 @@ def main():
     plt.tight_layout()
     plt.savefig(RESULTS_DIR / "pr_curve_val.png", dpi=150)
     plt.close()
+
+    # 2) Histogram of test anomaly scores
+    plt.figure(figsize=(6, 4))
+    plt.hist(s_te, bins=80, color="skyblue", edgecolor="black")
+    plt.axvline(float(best_thr), color="red", linestyle="--", label=f"Threshold = {float(best_thr):.4f}")
+    plt.title("Anomaly Score Distribution (Test)")
+    plt.xlabel("Anomaly Score (higher = more anomalous)")
+    plt.ylabel("Count")
+    plt.legend()
+    plt.tight_layout()
+    plt.savefig(RESULTS_DIR / "score_hist_test.png", dpi=150)
+    plt.close()
+
+    # 3) Confusion Matrix
+    plt.figure(figsize=(4, 3))
+    plt.imshow(cm, cmap="Blues")
+    for (i, j), val in np.ndenumerate(cm):
+        plt.text(j, i, f"{val}", ha="center", va="center", color="black")
+    plt.title("Confusion Matrix (Test)")
+    plt.xlabel("Predicted")
+    plt.ylabel("True")
+    plt.colorbar()
+    plt.tight_layout()
+    plt.savefig(RESULTS_DIR / "confusion_matrix_test.png", dpi=150)
+    plt.close()
+
+    print("✅ Done. Plots saved in 'results/'")
+
 
 if __name__ == "__main__":
     main()
