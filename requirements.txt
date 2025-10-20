@@ -8,3 +8,5 @@ ruptures
 matplotlib
 plotly
 joblib
+seaborn
+matplotlib

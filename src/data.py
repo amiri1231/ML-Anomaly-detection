@@ -38,7 +38,7 @@ def prepare_features(raw: pd.DataFrame):
     to_drop = [c for c in DROP_COLS if c in raw.columns]
     df = raw.drop(columns=to_drop, errors="ignore").copy()
 
-    # numeric-only features
+    # numeric only features
     num_cols = [c for c in df.columns if pd.api.types.is_numeric_dtype(df[c])]
     if LABEL_COL in num_cols:
         num_cols.remove(LABEL_COL)
