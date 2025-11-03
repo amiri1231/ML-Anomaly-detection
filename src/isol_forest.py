@@ -10,10 +10,13 @@ from sklearn.metrics import (
     classification_report,
     confusion_matrix,
 )
+from sklearn.utils import shuffle
 
 from .config import MODEL_DIR, RESULTS_DIR, RANDOM_STATE, VAL_SPLIT, TEST_SPLIT
 from .data import load_raw, prepare_features
 from .features import add_ratio_features
+
+
 
 
 def split_indices(n_rows: int, val_split: float, test_split: float):
@@ -56,6 +59,8 @@ def main():
     X, y, _ = prepare_features(raw)
     X = add_ratio_features(X)
 
+    X, y = shuffle(X, y, random_state=RANDOM_STATE)
+
     print("Splitting Data")
     tr, va, te = split_indices(len(X), VAL_SPLIT, TEST_SPLIT)
     X_tr, X_va, X_te = X.iloc[tr], X.iloc[va], X.iloc[te]
@@ -73,7 +78,7 @@ def main():
     X_te_s = scaler.transform(X_te)
 
     print("Training IsolationForest")
-    contamination = max(0.10, float(y_tr.mean()))
+    contamination = max(1e-4, float(y_tr.mean()))
     iso = IsolationForest(
         n_estimators=200,
         max_samples="auto",
@@ -101,6 +106,8 @@ def main():
     yhat_te = (s_te >= best_thr).astype(int)
     cm = confusion_matrix(y_te, yhat_te)
     print("Confusion matrix:\n", cm)
+    tn, fp, fn, tp = cm.ravel()
+    print(f"TN={tn}  FP={fp}  FN={fn}  TP={tp}")
     print("Classification report:\n", classification_report(y_te, yhat_te, digits=3))
 
     print("Saving bundle and scores")
