@@ -7,6 +7,7 @@ RESULTS_DIR = Path("results")
 DATA_FILES = [
     "Monday-WorkingHours.pcap_ISCX.csv",
     "Friday-WorkingHours-Afternoon-DDos.pcap_ISCX.csv",
+    "Thursday-WorkingHours-Morning-WebAttacks.pcap_ISCX.csv",
 ]
 
 LABEL_COL = 'Label'

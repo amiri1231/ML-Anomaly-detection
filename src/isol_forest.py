@@ -17,7 +17,7 @@ from .features import add_ratio_features
 
 
 def split_indices(n_rows: int, val_split: float, test_split: float):
-    """Contiguous index split: first train, then val, then test."""
+
     train_frac = 1.0 - val_split - test_split
     cut1 = int(train_frac * n_rows)
     cut2 = int((train_frac + val_split) * n_rows)
@@ -26,7 +26,7 @@ def split_indices(n_rows: int, val_split: float, test_split: float):
 
 
 def choose_threshold_on_validation(y_val, s_val):
-    """Pick threshold maximizing F1 on validation scores."""
+    
     prec, rec, thr_grid = precision_recall_curve(y_val, s_val)
     best_f1, best_thr, best_p, best_r = -1.0, None, 0.0, 0.0
     for i in range(len(thr_grid)):
@@ -40,7 +40,7 @@ def choose_threshold_on_validation(y_val, s_val):
 
 
 def safe_ap(y, s):
-    """Average precision that returns NaN if a split has a single class."""
+
     if np.unique(y).size < 2:
         return float("nan")
     return average_precision_score(y, s)
