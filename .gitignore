@@ -6,6 +6,8 @@ results/
 
 test/
 
+models/
+
 __pycache__/
 *.pyc
 *.pyo

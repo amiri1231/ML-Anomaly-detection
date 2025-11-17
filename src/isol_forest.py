@@ -58,6 +58,7 @@ def grid_search_if(X_tr_s, y_tr, X_va_s, y_va, random_state):
         {"n_estimators": 600, "max_samples": 0.5,   "max_features": 1.0, "contamination": float(y_tr.mean())},
         {"n_estimators": 600, "max_samples": 0.5,   "max_features": 0.75,"contamination": float(y_tr.mean())},
         {"n_estimators": 800, "max_samples": 0.5,   "max_features": 1.0, "contamination": float(y_tr.mean())},
+        {"n_estimators": 1000, "max_samples": 0.5,   "max_features": 0.75, "contamination": float(y_tr.mean())}
     ]
 
     best = None
