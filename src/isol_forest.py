@@ -2,6 +2,7 @@ import joblib
 import numpy as np
 import matplotlib.pyplot as plt
 
+
 from sklearn.preprocessing import RobustScaler
 from sklearn.ensemble import IsolationForest
 from sklearn.metrics import (
@@ -49,6 +50,42 @@ def safe_ap(y, s):
     return average_precision_score(y, s)
 
 
+def grid_search_if(X_tr_s, y_tr, X_va_s, y_va, random_state):
+   
+    param_grid = [
+        {"n_estimators": 400, "max_samples": "auto", "max_features": 1.0, "contamination": float(y_tr.mean())},
+        {"n_estimators": 400, "max_samples": 0.5,   "max_features": 1.0, "contamination": float(y_tr.mean())},
+        {"n_estimators": 600, "max_samples": 0.5,   "max_features": 1.0, "contamination": float(y_tr.mean())},
+        {"n_estimators": 600, "max_samples": 0.5,   "max_features": 0.75,"contamination": float(y_tr.mean())},
+        {"n_estimators": 800, "max_samples": 0.5,   "max_features": 1.0, "contamination": float(y_tr.mean())},
+    ]
+
+    best = None
+    for params in param_grid:
+        iso = IsolationForest(
+            n_estimators=params["n_estimators"],
+            max_samples=params["max_samples"],
+            max_features=params["max_features"],
+            contamination=params["contamination"],
+            random_state=random_state,
+            n_jobs=-1,
+        ).fit(X_tr_s)
+
+        s_va = -iso.decision_function(X_va_s)
+        ap_va = safe_ap(y_va, s_va)
+        print(f"[GRID] {params} -> val AUC-PR = {ap_va:.3f}")
+
+        if best is None or ap_va > best["ap_va"]:
+            best = {
+                "params": params,
+                "iso": iso,
+                "ap_va": ap_va,
+                "s_va": s_va,
+            }
+
+    print(f"[GRID] Best params: {best['params']} with val AUC-PR={best['ap_va']:.3f}")
+    return best["iso"]
+
 # ----------------------------- Main -----------------------------
 def main():
     MODEL_DIR.mkdir(parents=True, exist_ok=True)
@@ -77,15 +114,9 @@ def main():
     X_va_s = scaler.transform(X_va)
     X_te_s = scaler.transform(X_te)
 
-    print("Training IsolationForest")
-    contamination = max(1e-4, float(y_tr.mean()))
-    iso = IsolationForest(
-        n_estimators=200,
-        max_samples="auto",
-        contamination=contamination,
-        random_state=RANDOM_STATE,
-        n_jobs=-1,
-    ).fit(X_tr_s)
+    print("Training IsolationForest (grid search)")
+    iso = grid_search_if(X_tr_s, y_tr, X_va_s, y_va, RANDOM_STATE)
+
 
     print("Scoring")
     s_tr = -iso.decision_function(X_tr_s)
